@@ -13,21 +13,83 @@ from scipy.stats import norm
 
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
-# from read_utils import custom_na_values
-from utils_plot import metrics_colors_dictionary, plots_general_config, mutation_type_colors
+
 # from plot_selection_omega import plot_omega_vertical, build_counts_from_df_complete
-from read_utils import custom_na_values
 
 
 
-mpl.rcParams.update({
-    'axes.titlesize'    : plots_general_config["title_fontsize"],       # Title font size
-    'axes.labelsize'    : plots_general_config["xylabel_fontsize"],     # X and Y axis labels
-    'xtick.labelsize'   : plots_general_config["xyticks_fontsize"],     # X tick labels
-    'ytick.labelsize'   : plots_general_config["xyticks_fontsize"],     # Y tick labels
-    'legend.fontsize'   : plots_general_config["legend_fontsize"],      # Legend text
-    'figure.titlesize'  : plots_general_config["title_fontsize"],       # Figure suptitle (if used)
-})
+plots_general_config = {
+
+                        # fonsizes
+                        "ylabel_fontsize": 6,
+                        "xlabel_fontsize": 6,
+                        "xylabel_fontsize": 6,
+                        "title_fontsize": 7,
+                        "xyticks_fontsize": 5,
+                        "xticks_fontsize": 5,
+                        "yticks_fontsize": 5,
+                        "legend_fontsize": 5,
+                        "annots_fontsize": 5,
+
+                        "dot_size_scplot": 15,
+                        "dot_size_coeffplot": 5,
+                        "dot_sizebelow_coeffplot": 40,
+                        "dot_color_coeffplot": "#D3D3D3",
+                        "dot_colorabove_coeffplot": "#D62728",
+                        "dot_colorbelow_coeffplot": "#f29c9e",
+                        "dot_edgethres_coeffplot": 0.2,
+                        "dot_edgewidth_coeffplot": 0.5
+                        }
+
+
+metrics_colors_dictionary = {"ofml"        : "viridis_r",
+                                "ofml_score"  : "#6A33E0",
+                                "omega_trunc" : "#FA5E32",
+                                "omega_synon" : "#89E4A2",
+                                "omega_miss"  : "#FABE4A",
+                                "o3d_score"   : "#6DBDCC",
+                                "o3d_cluster" : "skyblue",
+                                "o3d_prob"    : "darkgray",
+                                "frameshift"  : "#E4ACF4",
+                                "inframe"     : "C5",
+                                "hv_lines"    : "lightgray", # horizontal and vertical lines,
+                                "hv_lines_needle" : "gray",
+                                "needle_obs"  : "#003366",
+                                "omega_miss_tert" : "#f5840c",
+                                "omega_synon_tert": "#378c12",
+                                "nonsense" : "#FA5E32",
+                                "synonymous" : "#89E4A2",
+                                "missense"  : "#FABE4A",
+                                "indel"       : "#ECC4F7",
+                                "splicing"    : "#A1C5DF",
+                                }
+
+
+custom_na_values_list = [" ", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan",
+                    "1.#IND", "1.#QNAN", "<NA>", "N/A",
+                    # "NA",
+                    "NULL", "NaN", "None",
+                    "n/a", "nan", "null "]
+
+custom_na_values_list = ["Allele", "Gene", "Feature", "Feature_type", "Amino_acids", "Codons",
+                            "Existing_variation", "FLAGS", "SYMBOL", "SYMBOL_SOURCE", "HGNC_ID",
+                            "canonical_Allele", "canonical_Gene", "canonical_Feature", "canonical_Feature_type",
+                            "canonical_Amino_acids", "canonical_Codons", "canonical_Existing_variation",
+                            "canonical_FLAGS", "canonical_SYMBOL", "canonical_SYMBOL_SOURCE", "canonical_HGNC_ID",
+                            "INVENTED_COLUMN"]
+
+custom_na_values = {col : custom_na_values_list for col in custom_na_values_list}
+
+
+
+# mpl.rcParams.update({
+#     'axes.titlesize'    : plots_general_config["title_fontsize"],       # Title font size
+#     'axes.labelsize'    : plots_general_config["xylabel_fontsize"],     # X and Y axis labels
+#     'xtick.labelsize'   : plots_general_config["xyticks_fontsize"],     # X tick labels
+#     'ytick.labelsize'   : plots_general_config["xyticks_fontsize"],     # Y tick labels
+#     'legend.fontsize'   : plots_general_config["legend_fontsize"],      # Legend text
+#     'figure.titlesize'  : plots_general_config["title_fontsize"],       # Figure suptitle (if used)
+# })
 
 
 
@@ -36,10 +98,11 @@ mpl.rcParams.update({
 def generate_all_side_figures(sample,
                                 outdir = '.',
                                 gene_list = None,
+                                data_path = None,
                                 tools = ["oncodrivefml", "omega_trunc", "omega_mis"]
                                 ):
 
-    maf_file = f"input/{sample}.somatic.mutations.tsv"
+    maf_file = f"{data_path}/{sample}.somatic.mutations.tsv"
     if not os.path.exists(maf_file):
         print(f"Warning: MAF file {maf_file} not found. Skipping side figures generation.")
         return
@@ -55,7 +118,7 @@ def generate_all_side_figures(sample,
     
     # Check and load oncodrivefml data
     if "oncodrivefml" in tools:
-        oncodrivefml_file = f"input/{sample}-oncodrivefml.tsv.gz"
+        oncodrivefml_file = f"{data_path}/{sample}-oncodrivefml.tsv.gz"
         if os.path.exists(oncodrivefml_file):
             oncodrivefml_data = pd.read_table(oncodrivefml_file)
             oncodrivefml_data = oncodrivefml_data[["GENE_ID", "Z-SCORE", "Q_VALUE", "AVG_SCORE_OBS", "POPULATION_MEAN", "STD_OF_MEANS"]]
@@ -68,7 +131,7 @@ def generate_all_side_figures(sample,
 
     # Check and load omega data
     if "omega_trunc" in tools or "omega_mis" in tools:
-        omega_file = f"input/all_omega_values.tsv"
+        omega_file = f"{data_path}/all_omega_values.tsv"
         if os.path.exists(omega_file):
             omega_data = pd.read_table(omega_file)
             omega_data = omega_data[(omega_data["impact"].isin(['missense', 'truncating']))
@@ -92,7 +155,7 @@ def generate_all_side_figures(sample,
 
     # Check and load indels data
     if "excess_indels" in tools:
-        indels_file = f"input/{sample}.sample.indels.tsv"
+        indels_file = f"{data_path}/{sample}.sample.indels.tsv"
         if os.path.exists(indels_file):
             indels_data = pd.read_table(indels_file,
                                             sep = '\t',
@@ -132,16 +195,6 @@ def generate_all_side_figures(sample,
                     plt.show()
                     plt.close()
                     print("omega done", end = '\t')
-
-            if "excess_indels" in tools:
-                if genee in indels_genes:
-                    indel_data_gene = indels_data[indels_data["SYMBOL"] == genee].to_dict(orient='records')[0]
-
-                    fig_gene_indel = plotting_indels_side(indel_data_gene)
-                    fig_gene_indel.savefig(f"{outdir}/{genee}.{sample}.indels.pdf", bbox_inches='tight', dpi = 100)
-                    plt.show()
-                    plt.close()
-                    print("indels done")
 
         except Exception as exe:
             print("failed processing of")
@@ -495,7 +548,8 @@ def plot_all_positive_selection(omega_truncating,
 def get_all_data(sample, outdir,
                  pvaluee = 0.05,
                  tracks=("omega_trunc", "omega_mis", "oncodrive3d", "oncodrivefml"),
-                 gene_order = None
+                 gene_order = None,
+                 data_path = None
                  ):
 
     # Initialize variables for optional data
@@ -508,7 +562,7 @@ def get_all_data(sample, outdir,
     available_tracks = []
 
     # Check and load oncodrivefml data
-    oncodrivefml_file = f"input/{sample}-oncodrivefml.tsv.gz"
+    oncodrivefml_file = f"{data_path}/{sample}-oncodrivefml.tsv.gz"
     if os.path.exists(oncodrivefml_file) and "oncodrivefml" in tracks:
         try:
             oncodrivefml_data = pd.read_table(oncodrivefml_file)
@@ -522,7 +576,7 @@ def get_all_data(sample, outdir,
         print(f"Warning: OncodriveFML file {oncodrivefml_file} not found. Skipping OncodriveFML track.")
 
     # Check and load omega data
-    omega_file = f"input/all_omega_values.tsv"
+    omega_file = f"{data_path}/all_omega_values.tsv"
     if os.path.exists(omega_file) and ("omega_trunc" in tracks or "omega_mis" in tracks):
         try:
             omega_data = pd.read_table(omega_file)
@@ -596,7 +650,7 @@ def get_all_data(sample, outdir,
         print(f"Warning: Omega file {omega_file} not found. Skipping Omega tracks.")
 
     # Check and load oncodrive3d data
-    oncodrive3d_file = f"input/{sample}.3d_clustering_genes.csv"
+    oncodrive3d_file = f"{data_path}/{sample}.3d_clustering_genes.csv"
     if os.path.exists(oncodrive3d_file) and "oncodrive3d" in tracks:
         try:
             oncodrive3d_data = pd.read_table(oncodrive3d_file, sep = ',')
@@ -609,19 +663,6 @@ def get_all_data(sample, outdir,
     else:
         print(f"Warning: Oncodrive3D file {oncodrive3d_file} not found. Skipping Oncodrive3D track.")
 
-    # # Check and load indels data
-    # indels_file = f"input/{sample}.sample.indels.tsv"
-    # if os.path.exists(indels_file) and "indels" in tracks:
-    #     try:
-    #         indels_data = pd.read_table(indels_file)
-    #         indels_panel_df = indels_data[["SYMBOL", "pa/Npa", "pvalue"]]
-    #         indels_panel_df.columns = ["GENE", "Indels_score", "pvalue"]
-    #         available_tracks.append("indels")
-    #         print(f"Loaded indels data from {indels_file}")
-    #     except Exception as e:
-    #         print(f"Warning: Failed to load indels data: {e}")
-    # else:
-    #     print(f"Warning: Indels file {indels_file} not found. Skipping indels track.")
 
     # Check if we have any data to plot
     if not available_tracks:
