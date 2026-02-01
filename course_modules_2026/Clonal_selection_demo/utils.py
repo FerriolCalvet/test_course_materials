@@ -82,14 +82,14 @@ custom_na_values = {col : custom_na_values_list for col in custom_na_values_list
 
 
 
-# mpl.rcParams.update({
-#     'axes.titlesize'    : plots_general_config["title_fontsize"],       # Title font size
-#     'axes.labelsize'    : plots_general_config["xylabel_fontsize"],     # X and Y axis labels
-#     'xtick.labelsize'   : plots_general_config["xyticks_fontsize"],     # X tick labels
-#     'ytick.labelsize'   : plots_general_config["xyticks_fontsize"],     # Y tick labels
-#     'legend.fontsize'   : plots_general_config["legend_fontsize"],      # Legend text
-#     'figure.titlesize'  : plots_general_config["title_fontsize"],       # Figure suptitle (if used)
-# })
+mpl.rcParams.update({
+    'axes.titlesize'    : plots_general_config["title_fontsize"],       # Title font size
+    'axes.labelsize'    : plots_general_config["xylabel_fontsize"],     # X and Y axis labels
+    'xtick.labelsize'   : plots_general_config["xyticks_fontsize"],     # X tick labels
+    'ytick.labelsize'   : plots_general_config["xyticks_fontsize"],     # Y tick labels
+    'legend.fontsize'   : plots_general_config["legend_fontsize"],      # Legend text
+    'figure.titlesize'  : plots_general_config["title_fontsize"],       # Figure suptitle (if used)
+})
 
 
 
